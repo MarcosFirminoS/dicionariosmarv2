@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dicionário Visual — Acordes + Escalas (áudio)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-light:#f5f2ec; --card:#ffffff; --muted:#5b4b3b; --accent:#2b6777; --accent-strong:#22525f;
+    --white:#ffffff; --black:#000000;
+    --fam-maj:#6fa8dc; --fam-min:#b39ddb; --fam-7:#f6b26b; --fam-maj7:#93c47d; --fam-m7:#f4cccc; --fam-m7b5:#ffd966; --fam-dim:#e06666;
+    --btn-bg:#1e2a33; --btn-text:#ffc857;
+    --scale:#7fb685; --scale-tonic:#ff9f1c;
+  }
+  [data-theme='dark']{
+    --bg-light:#0b1216; --card:#18242c; --muted:#cfd8dc; --accent:#66c7c7; --accent-strong:#4eb0b0;
+    --btn-bg:#1e2a33; --btn-text:#ffc857;
+    --scale:#7fb685; --scale-tonic:#ffb347;
+  }
+  html, body { height:100%; min-height:100vh; margin:0; overflow-x:hidden; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background-color:var(--bg-light)!important; color:var(--muted); transition:background 0.4s ease,color 0.4s ease; }
+  header, main, footer, .wrap { background-color:inherit; }
+  .wrap{max-width:1200px;margin:20px auto;padding:18px}
+  header{margin-bottom:8px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 8px;}
+  h1{font-family:Poppins,system-ui;font-weight:700;margin:0;color:var(--muted);font-size:1.35rem;transition:color 0.4s ease;}
+  .subtitle{margin-bottom:26px;}
+  .controls{display:flex;gap:8px;align-items:center}
+  .toggle { background:var(--btn-bg); color:var(--btn-text); border:none; padding:12px 16px; border-radius:10px; font-weight:600; font-size:1rem; cursor:pointer; transition:all 0.3s ease; }
+  .toggle:hover { filter:brightness(1.2); }
+  .toggle:active { box-shadow:0 0 12px 3px #ffc857; transition:box-shadow 0.2s ease; }
+
+  main{margin-top:14px}
+  .family{margin-top:20px}
+  .family h2{margin:0 0 8px 0;padding:10px;border-radius:10px;color:var(--white);display:inline-block}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .card{background:var(--card);border-radius:12px;padding:10px;box-shadow:0 6px 20px rgba(11,17,22,0.06);border:1px solid rgba(43,103,119,0.25);transition:background 0.4s ease, border-color 0.4s ease;}
+  .chord-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;color:var(--muted);margin-bottom:8px}
+  .play-chord{background:transparent;border:1px solid rgba(43,103,119,0.35);color:var(--muted);padding:6px 10px;border-radius:8px;cursor:pointer}
+  .play-chord:hover{filter:brightness(1.1)}
+  .kbd-wrap{background:linear-gradient(180deg,rgba(255,255,255,0.05),transparent);padding:8px;border-radius:8px}
+  svg{width:100%;height:120px;border-radius:6px;display:block;transition:background 0.4s ease;}
+  .note-list{margin-top:8px;color:var(--muted);font-size:0.92rem}
+  .fam-tag{display:inline-block;padding:6px 10px;border-radius:999px;color:var(--white);font-weight:600;margin-left:8px}
+  footer{margin-top:28px;color:var(--muted)}
+  rect.white-key:hover{filter:brightness(1.08);} rect.black-key:hover{filter:brightness(1.15);} 
+
+  .top-tabs{display:flex;gap:10px;margin-top:18px;padding:8px;background:var(--bg-light);border:1px solid rgba(43,103,119,0.25);border-radius:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+.top-tabs::-webkit-scrollbar{height:6px}
+.top-tabs::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:999px}
+  .tab-btn{appearance:none;background:var(--btn-bg);border:none;color:#fff;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer;transition:filter .2s ease;flex:0 0 auto;white-space:nowrap;scroll-snap-align:start}
+  .tab-btn.active{background:var(--accent);color:#fff}
+  [data-tab-content][hidden]{display:none !important}
+ 
+  /* Sub-abas (filtros de acordes) */
+  .sub-tabs{display:flex;gap:8px;margin:10px 0 12px 0;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  .sub-tabs .tab-btn{padding:6px 10px;font-weight:700;border-radius:8px}
+  .sub-tabs .tab-btn.active{background:var(--accent);color:#fff}
+
+  /* Busca */
+  .chord-search{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .chord-search input{flex:1; padding:10px 12px; border-radius:10px; border:1px solid rgba(43,103,119,0.35); background:transparent; color:var(--muted); font-weight:600;}
+
+  /* Escalas */
+  .scale-panel{background:var(--card);border:1px solid rgba(43,103,119,0.25);border-radius:12px;padding:12px;margin-top:12px;box-shadow:0 6px 20px rgba(11,17,22,0.06)}
+  .scale-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+  .scale-controls label{font-weight:700}
+  .scale-controls select{appearance:none;background:transparent;border:1px solid rgba(43,103,119,0.35);color:var(--muted);padding:8px 10px;border-radius:8px;font-weight:600;cursor:pointer}
+  .scale-controls button{background:var(--btn-bg);color:var(--btn-text);border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;transition:filter .2s ease}
+  .scale-legend{font-size:0.9rem;margin-top:8px}
+  .pill{display:inline-block;padding:4px 8px;border-radius:999px;margin-right:8px;color:#fff}
+
+  /* Dock de Áudio */
+  .audio-dock{position:fixed;right:16px;bottom:16px;background:var(--card);color:var(--muted);border:1px solid rgba(43,103,119,0.25);box-shadow:0 12px 30px rgba(0,0,0,0.25);border-radius:14px;padding:10px 12px;z-index:50;display:flex;align-items:center;gap:10px}
+  .audio-dock label{font-size:0.9rem}
+  .audio-dock select{appearance:none;background:transparent;border:1px solid rgba(43,103,119,0.35);color:var(--muted);padding:8px 10px;border-radius:8px;font-weight:600;cursor:pointer}
+  .audio-dock .dot{width:8px;height:8px;border-radius:999px;background:var(--btn-text)}
+
+  @media (max-width:700px){ .audio-dock{right:10px;bottom:10px} }
+@media (max-width:560px){
+  .topbar{flex-wrap:wrap;gap:8px}
+  h1{font-size:1.15rem}
+  .tab-btn{padding:8px 10px;font-size:.95rem}
+  .sub-tabs .tab-btn{padding:6px 8px;font-size:.9rem}
+  .grid{grid-template-columns:1fr}
+  svg{height:100px}
+}
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Dicionário Visual — Acordes + Escalas</h1>
+        <div class="subtitle">2 oitavas (C3..B4) • Inversões reais • Teclas clicáveis com áudio • Escalas interativas</div>
+      </div>
+      <div class="controls">
+        <button class="toggle" id="themeToggle">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="top-tabs" id="navTabs">
+      <button data-tab="chords" class="tab-btn active">Dicionário de Acordes</button>
+      <button data-tab="scales" class="tab-btn">Escalas</button>
+      <button data-tab="harm" class="tab-btn">Campo Harmônico</button>
+      <button data-tab="progs" class="tab-btn">Progressões</button>
+    </nav>
+
+    <main id="mainContent" data-tab-content="chords">
+      <nav class="sub-tabs" id="chordTabs" aria-label="Filtro de família de acordes">
+        <button class="tab-btn active" data-fam="Maj">Maiores</button>
+        <button class="tab-btn" data-fam="Min">Menores</button>
+        <button class="tab-btn" data-fam="7">Dominantes 7</button>
+        <button class="tab-btn" data-fam="Maj7">Maj7</button>
+        <button class="tab-btn" data-fam="m7">m7</button>
+        <button class="tab-btn" data-fam="m7b5">m7♭5</button>
+        <button class="tab-btn" data-fam="dim7">Diminutos °7</button>
+      </nav>
+      <div class="chord-search">
+        <input id="chordSearch" type="text" placeholder="Buscar acorde (ex: C, D#m7, G7, Fmaj7)">
+        <button id="clearSearch" class="tab-btn" type="button">Limpar</button>
+      </div>
+      <div id="chordsMount"></div>
+    </main>
+
+  <section class="family" id="scalesSection" data-tab-content="scales" hidden>
+    <h2 style="background:var(--scale)">Escalas</h2>
+    <div class="scale-panel">
+      <div class="scale-controls">
+        <label for="scaleRoot">Tonalidade:</label>
+        <select id="scaleRoot"></select>
+        <label for="scaleType">Escala:</label>
+        <select id="scaleType">
+          <option value="major">Maior</option>
+          <option value="natural_minor">Menor natural</option>
+          <option value="major_pent">Pentatônica maior</option>
+          <option value="minor_pent">Pentatônica menor</option>
+          <option value="blues">Blues (menor)</option>
+        </select>
+        <button id="playScaleUp" class="btn scale-btn">▶️ Subindo</button>
+        <button id="playScaleUpDown" class="btn scale-btn">⏯️ Sobe e desce</button>
+      </div>
+      <div class="kbd-wrap" id="scaleKeyboard"></div>
+      <div class="scale-legend">
+        <span class="pill" style="background:var(--scale-tonic)">Tônica</span>
+        <span class="pill" style="background:var(--scale)">Graus da escala</span>
+      </div>
+      <div class="note-list" id="scaleNotes"></div>
+    </div>
+  </section>
+
+  <!-- Campo Harmônico -->
+  <section class="family" id="harmSection" data-tab-content="harm" hidden>
+    <h2 style="background:var(--fam-maj)">Campo Harmônico</h2>
+    <div class="scale-panel">
+      <div class="scale-controls">
+        <label for="harmKey">Tonalidade:</label>
+        <select id="harmKey"></select>
+        <label for="harmMode">Modo:</label>
+        <select id="harmMode">
+          <option value="major">Maior</option>
+          <option value="minor">Menor (natural)</option>
+        </select>
+      </div>
+      <div id="harmGrid" class="grid"></div>
+    </div>
+  </section>
+
+  <!-- Progressões -->
+  <section class="family" id="progsSection" data-tab-content="progs" hidden>
+    <h2 style="background:var(--fam-min)">Progressões</h2>
+    <div class="scale-panel">
+      <div class="scale-controls">
+        <label for="progKey">Tonalidade:</label>
+        <select id="progKey"></select>
+        <label for="progMode">Modo:</label>
+        <select id="progMode">
+          <option value="major">Maior</option>
+          <option value="minor">Menor (natural)</option>
+        </select>
+        <label for="progSel">Modelo:</label>
+        <select id="progSel"></select>
+        <button id="playProg" class="btn">▶️ Tocar</button>
+        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="loopProg"> Loop</label>
+      </div>
+      <div id="progGrid" class="grid"></div>
+    </div>
+  </section>
+
+  <footer>Toque notas clicando nas teclas ou use o botão 🎵 do acorde. Use a seção de Escalas para estudar graus e padrões.</footer>
+</div>
+
+<!-- Dock flutuante de áudio -->
+<div class="audio-dock" id="audioDock" title="Configurações de áudio">
+  <div class="dot" aria-hidden="true"></div>
+  <label for="timbreSel">Timbre:</label>
+  <select id="timbreSel">
+    <option value="piano" selected>Piano elétrico</option>
+    <option value="rhodes">Rhodes suave</option>
+    <option value="organ">Órgão</option>
+    <option value="pad">Pad</option>
+    <option value="pluck">Pluck</option>
+    <option value="bell">Bell</option>
+    <option value="synth">Synth brilhante</option>
+  </select>
+</div>
+
+<script>
+// =========================
+// Áudio: declarar primeiro para evitar TDZ
+// =========================
+let audioCtx = null; // será inicializado sob demanda
+let currentPreset = 'piano';
+function getAudioCtx(){
+  if(!audioCtx){
+    const Ctor = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new Ctor();
+  }
+  if(audioCtx.state === 'suspended'){
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// ====== Notas e helpers ======
+const SEMITONES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const START_OCTAVE=3,OCTAVES=2,START_ABS=START_OCTAVE*12,TOTAL=OCTAVES*12,END_ABS=START_ABS+TOTAL-1;
+const WHITE_W=28,WHITE_H=120,BLACK_W=18,BLACK_H=78;
+const FAMILY_COLORS={Maj:'var(--fam-maj)',Min:'var(--fam-min)',7:'var(--fam-7)',Maj7:'var(--fam-maj7)',m7:'var(--fam-m7)',m7b5:'var(--fam-m7b5)',dim7:'var(--fam-dim)'};
+const FORMULAS={
+  Maj:[0,4,7],
+  Min:[0,3,7],
+  7:[0,4,7,10],
+  Maj7:[0,4,7,11],
+  m7:[0,3,7,10],
+  m7b5:[0,3,6,10],
+  dim7:[0,3,6,9],
+  dim:[0,3,6]
+};
+const ROOTS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FAMILIES=[
+  {key:'Maj',title:'Triades Maiores'},
+  {key:'Min',title:'Triades Menores'},
+  {key:'7',title:'Dominantes (7)'},
+  {key:'Maj7',title:'Maiores com 7M (Maj7)'},
+  {key:'m7',title:'Menores com 7 (m7)'},
+  {key:'m7b5',title:'Meio-diminutos (m7♭5)'},
+  {key:'dim7',title:'Diminutos (°7)'}
+];
+const SCALES={
+  major:[0,2,4,5,7,9,11],
+  natural_minor:[0,2,3,5,7,8,10],
+  major_pent:[0,2,4,7,9],
+  minor_pent:[0,3,5,7,10],
+  blues:[0,3,5,6,7,10]
+};
+// Mapeamento de sufixos para a busca (exibição simbólica)
+const famSymbolMap={Maj:'', Min:'m', '7':'7', Maj7:'maj7', m7:'m7', m7b5:'m7b5', dim7:'dim7'};
+
+function normalize(n){const map={'DB':'C#','EB':'D#','GB':'F#','AB':'G#','BB':'A#'};let s=n.toUpperCase().replace(/\s+/g,'');return map[s]||s;}
+function semitoneOf(name){return SEMITONES.indexOf(normalize(name));}
+function absIndex(name,octave){return octave*12+semitoneOf(name);} 
+function absLabel(abs){return SEMITONES[abs%12]+Math.floor(abs/12);} 
+function buildChordAbs(rootName,offsets){
+  const rootAbs=absIndex(rootName,START_OCTAVE);
+  const arr=offsets.map(off=>rootAbs+off);
+  for(let i=1;i<arr.length;i++){ while(arr[i]<=arr[i-1]) arr[i]+=12; }
+  return arr;
+}
+function inversionsAbs(notesAbs){
+  const invs=[]; let v=notesAbs.slice();
+  invs.push(v.slice());
+  for(let k=1;k<notesAbs.length;k++){ const moved=v.shift(); v.push(moved+12); invs.push(v.slice()); }
+  return invs;
+}
+
+// ====== Render teclado (reutilizado) ======
+function renderKeyboardSVG(pressedAbs, tonicAbs=null){
+  const keys=[];
+  for(let abs=START_ABS;abs<=END_ABS;abs++){
+    const sem=abs%12; const name=SEMITONES[sem];
+    const type=['C#','D#','F#','G#','A#'].includes(name)?'black':'white';
+    keys.push({abs,name,type});
+  }
+  let whiteCount=0; const whitePos={};
+  for(const k of keys){ if(k.type==='white'){ whitePos[k.abs]=whiteCount*WHITE_W; whiteCount++; } }
+  const svgW=whiteCount*WHITE_W; let svg=`<svg viewBox="0 0 ${svgW} ${WHITE_H}" xmlns="http://www.w3.org/2000/svg">`;
+  for(const k of keys){ if(k.type==='white'){ const x=whitePos[k.abs]; const pressed=pressedAbs.includes(k.abs); const isTonic=(tonicAbs!==null && k.abs===tonicAbs);
+    const fill = isTonic ? 'var(--scale-tonic)' : (pressed?'var(--scale)':'#fff');
+    const textFill = pressed||isTonic ? '#fff' : '#333';
+    svg+=`<rect class="white-key" data-abs="${k.abs}" data-note="${k.name}" x="${x}" y="0" width="${WHITE_W}" height="${WHITE_H}" rx="3" fill="${fill}" stroke="#cfcfcf"/>`;
+    svg+=`<text x="${x+WHITE_W/2}" y="${WHITE_H-8}" font-size="10" text-anchor="middle" fill="${textFill}">${k.name}</text>`; } }
+  for(const k of keys){ if(k.type==='black'){
+    let prev=k.abs-1; while(prev>=START_ABS && whitePos[prev]===undefined) prev--; if(prev<START_ABS) prev=START_ABS;
+    const baseX=whitePos[prev]!==undefined?whitePos[prev]:0; const x=baseX+WHITE_W-Math.round(BLACK_W/2);
+    const pressed=pressedAbs.includes(k.abs); const isTonic=(tonicAbs!==null && k.abs===tonicAbs);
+    const fill = isTonic ? 'var(--scale-tonic)' : (pressed?'var(--scale)':'#000');
+    const textFill = '#fff';
+    svg+=`<rect class="black-key" data-abs="${k.abs}" data-note="${k.name}" x="${x}" y="0" width="${BLACK_W}" height="${BLACK_H}" rx="3" fill="${fill}" stroke="#000"/>`;
+    if(pressed||isTonic) svg+=`<text x="${x+BLACK_W/2}" y="${BLACK_H-8}" font-size="9" text-anchor="middle" fill="${textFill}">${k.name}</text>`; } }
+  svg+='</svg>'; return svg;
+}
+
+// ====== Constrói seções de acordes por família (filtráveis) ======
+const main=document.getElementById('mainContent');
+const chordsMount=document.getElementById('chordsMount');
+function buildChordFamilySection(fam){
+  const section=document.createElement('section'); section.className='family'; section.setAttribute('data-family', fam.key);
+  const title=document.createElement('h2'); title.textContent=fam.title; title.style.background=FAMILY_COLORS[fam.key]; section.appendChild(title);
+  const grid=document.createElement('div'); grid.className='grid';
+  for(const root of ROOTS){
+    const offsets=FORMULAS[fam.key]; const baseAbs=buildChordAbs(root,offsets); const invs=inversionsAbs(baseAbs);
+    for(let i=0;i<invs.length;i++){
+      const inv=invs[i];
+      const pressedInRange=inv.filter(a=>a>=START_ABS&&a<=END_ABS); if(!pressedInRange.length) continue;
+      const card=document.createElement('div'); card.className='card';
+      // dados para busca
+      const symbol=famSymbolMap[fam.key]||''; const baseLabel=(root+(symbol||''));
+      const bassName = SEMITONES[inv[0]%12];
+      const slashLabel = `${root}/${bassName}`;
+      card.dataset.label = baseLabel.toLowerCase();
+      card.dataset.slash = slashLabel.toLowerCase();
+
+      const h=document.createElement('div'); h.className='chord-title';
+      const suffix=fam.key==='Min'?'m':''; const famLabel=fam.key==='Maj'?'':fam.key; const invLabel=invs.length>1?(i===0?' (fund.)':` (${i}ª inv.)`):'';
+      const left=document.createElement('div'); left.textContent=root+suffix+(famLabel?' '+famLabel:'')+invLabel; left.style.flex='1';
+      const tag=document.createElement('span'); tag.className='fam-tag'; tag.style.background=FAMILY_COLORS[fam.key]; tag.textContent=fam.key; left.appendChild(tag);
+      const play=document.createElement('button'); play.className='play-chord'; play.title='Tocar acorde'; play.textContent='🎵';
+      const arp=document.createElement('button'); arp.className='play-chord'; arp.title='Arpejar acorde'; arp.textContent='↗️';
+      h.appendChild(left); h.appendChild(play); h.appendChild(arp);
+      const wrap=document.createElement('div'); wrap.className='kbd-wrap'; wrap.innerHTML=renderKeyboardSVG(pressedInRange);
+      const svgEl = wrap.querySelector('svg');
+      wrap.addEventListener('click', e=>{
+        if(e.target && (e.target.matches('rect.white-key') || e.target.matches('rect.black-key'))){
+          const abs = parseInt(e.target.getAttribute('data-abs'));
+          playNoteAbs(abs, 2.0, svgEl);
+        }
+      });
+      play.addEventListener('click', ()=> playChord(inv, svgEl, 1.8, true));
+      arp.addEventListener('click', ()=> playChord(inv, svgEl, 1.8, false));
+      const list=document.createElement('div'); list.className='note-list'; list.textContent='Notas (com oitava): '+inv.map(a=>absLabel(a)).join(' — ');
+      card.appendChild(h); card.appendChild(wrap); card.appendChild(list); grid.appendChild(card);
+    }
+  }
+  section.appendChild(grid);
+  return section;
+}
+
+// ====== Busca por acordes (refs declaradas cedo p/ evitar TDZ) ======
+var chordSearchInput = null, clearSearchBtn = null;
+
+// monta todas as famílias mas deixa visível só a ativa
+const chordSections = {};
+FAMILIES.forEach(f=>{ const sec=buildChordFamilySection(f); chordSections[f.key]=sec; chordsMount.appendChild(sec); });
+let currentFamily='Maj';
+function showFamily(key){ currentFamily=key; Object.values(chordSections).forEach(sec=> sec.hidden = (sec.getAttribute('data-family')!==key)); applyChordSearch(); }
+showFamily('Maj');
+
+// sub-abas (filtro)
+const chordTabs=document.getElementById('chordTabs');
+if(chordTabs){
+  const btns=chordTabs.querySelectorAll('.tab-btn');
+  btns.forEach(btn=> btn.addEventListener('click', ()=>{
+    btns.forEach(b=> b.classList.toggle('active', b===btn));
+    showFamily(btn.getAttribute('data-fam'));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }));
+}
+
+// ====== Busca por acordes ======
+chordSearchInput=document.getElementById('chordSearch');
+clearSearchBtn=document.getElementById('clearSearch');
+function normalizeQuery(q){
+  q = (q||'').trim();
+  if(!q) return '';
+  q = q.replaceAll('♭','b').replaceAll('♯','#');
+  q = q.replace(/\s+/g,'');
+  q = q.replace(/∆7|Δ7|maj7/gi,'maj7')
+       .replace(/ø|m7♭5|m7b5/gi,'m7b5')
+       .replace(/dim7|°7|o7/gi,'dim7')
+       .replace(/min/gi,'m');
+  const m = q.match(/^([a-g])(b|#)?([^/]*)(?:\/([a-g])(b|#)?)?$/i);
+  if(!m) return q.toLowerCase();
+  const flatMap = { 'cb':'b', 'db':'c#', 'eb':'d#', 'fb':'e', 'gb':'f#', 'ab':'g#', 'bb':'a#' };
+  const toSharp = (note, acc) => {
+    const key = (note + (acc||'')).toLowerCase();
+    return flatMap[key] || key;
+  };
+  const root = toSharp(m[1], m[2]);
+  let suffix = (m[3]||'').toLowerCase();
+  if(/(^|[^a-z])dim(?!7)/.test(suffix)) suffix = suffix.replace(/dim(?!7)/,'dim7');
+  const slash = m[4] ? toSharp(m[4], m[5]) : null;
+  return (root + suffix + (slash? '/' + slash : '')).toLowerCase();
+}
+function applyChordSearch(){
+  const q = normalizeQuery(chordSearchInput ? chordSearchInput.value : '');
+  const sec = chordSections[currentFamily]; if(!sec) return;
+  const cards = sec.querySelectorAll('.card');
+  cards.forEach(card=>{
+    if(!q){ card.style.display=''; return; }
+    const label = (card.dataset.label||'').toLowerCase();
+    const slash = (card.dataset.slash||'').toLowerCase();
+    const hit = (label === q) || (slash === q);
+    card.style.display = hit? '' : 'none';
+  });
+}
+if(chordSearchInput){ chordSearchInput.addEventListener('input', applyChordSearch); }
+if(clearSearchBtn){ clearSearchBtn.addEventListener('click', ()=>{ if(chordSearchInput){ chordSearchInput.value=''; } applyChordSearch(); if(chordSearchInput) chordSearchInput.focus(); }); }
+
+// ====== Escalas (render + áudio) ======
+const scaleRootSel=document.getElementById('scaleRoot');
+const scaleTypeSel=document.getElementById('scaleType');
+const scaleKbd=document.getElementById('scaleKeyboard');
+const scaleNotes=document.getElementById('scaleNotes');
+if(scaleRootSel){ ROOTS.forEach(r=>{ const opt=document.createElement('option'); opt.value=r; opt.textContent=r; scaleRootSel.appendChild(opt); }); }
+
+function buildScaleAbs(rootName, pattern){
+  let base = absIndex(rootName, START_OCTAVE);
+  while(base<START_ABS) base+=12; while(base>END_ABS) base-=12;
+  const notes=[];
+  [0,12].forEach(add=>{ pattern.forEach(step=>{ const n=base+step+add; if(n>=START_ABS && n<=END_ABS) notes.push(n); }); });
+  return [...new Set(notes)].sort((a,b)=>a-b);
+}
+let currentScaleAbs=[];
+function updateScale(){
+  if(!scaleRootSel||!scaleTypeSel) return;
+  const pat=SCALES[scaleTypeSel.value];
+  const notesAbs=buildScaleAbs(scaleRootSel.value, pat);
+  const tonicAbs = notesAbs.length?notesAbs[0]:null;
+  scaleKbd.innerHTML = renderKeyboardSVG(notesAbs, tonicAbs);
+  const svgEl = scaleKbd.querySelector('svg');
+  currentScaleAbs = notesAbs.slice();
+  scaleKbd.onclick = (e)=>{
+    const t=e.target; if(!(t && (t.matches('rect.white-key')||t.matches('rect.black-key')))) return;
+    const abs = parseInt(t.getAttribute('data-abs'));
+    if(currentScaleAbs.includes(abs)) playNoteAbs(abs, 1.6, svgEl);
+  };
+  scaleNotes.textContent = 'Notas: ' + notesAbs.map(absLabel).join(' — ');
+}
+function playScale(notesAbs, svgEl, upDown=false){
+  const seq = upDown ? [...notesAbs, ...notesAbs.slice(0,-1).reverse()] : notesAbs;
+  const stepMs = 220;
+  seq.forEach((abs,i)=> setTimeout(()=> playNoteAbs(abs, 0.8, svgEl), i*stepMs));
+}
+if(scaleRootSel){ scaleRootSel.value='C'; updateScale(); scaleRootSel.addEventListener('change', updateScale); }
+if(scaleTypeSel){ scaleTypeSel.addEventListener('change', updateScale); }
+const btnUp=document.getElementById('playScaleUp');
+const btnUpDown=document.getElementById('playScaleUpDown');
+if(btnUp){ btnUp.addEventListener('click', ()=>{ const svgEl=scaleKbd.querySelector('svg'); if(currentScaleAbs.length) playScale(currentScaleAbs, svgEl, false); }); }
+if(btnUpDown){ btnUpDown.addEventListener('click', ()=>{ const svgEl=scaleKbd.querySelector('svg'); if(currentScaleAbs.length) playScale(currentScaleAbs, svgEl, true); }); }
+
+// ====== Áudio (sintetizador) ======
+const timbreSel=document.getElementById('timbreSel');
+if(timbreSel){ timbreSel.addEventListener('change', e=>{ currentPreset=e.target.value; pulseDock(); }); }
+function pulseDock(){ const dot=document.querySelector('#audioDock .dot'); if(!dot) return; dot.animate([{transform:'scale(1)'},{transform:'scale(1.4)'},{transform:'scale(1)'}],{duration:300}); }
+
+function noteToFreq(note){ const A4=440; const pitch=note.slice(0,-1); const oct=parseInt(note.slice(-1)); const semi=SEMITONES.indexOf(pitch); const n=(oct-4)*12+(semi-9); return A4*Math.pow(2,n/12); }
+function absToFreq(abs){ return noteToFreq(absLabel(abs)); }
+
+function flashKey(abs, svgEl){
+  if(!svgEl) return;
+  const els=svgEl.querySelectorAll(`rect[data-abs="${abs}"]`);
+  els.forEach(el=>{
+    const prev=el.getAttribute('stroke')||''; const prevW=el.getAttribute('stroke-width')||'1';
+    el.setAttribute('data-prev-stroke',prev); el.setAttribute('data-prev-w',prevW);
+    el.setAttribute('stroke', getComputedStyle(document.body).getPropertyValue('--accent'));
+    el.setAttribute('stroke-width','3');
+    setTimeout(()=>{ el.setAttribute('stroke', el.getAttribute('data-prev-stroke')||'#000'); el.setAttribute('stroke-width', el.getAttribute('data-prev-w')||'1'); }, 200);
+  });
+}
+
+function envGain(node, now, a=0.01, d=0.2, s=0.0008, r=0.6){ node.gain.setValueAtTime(0.0001, now); node.gain.exponentialRampToValueAtTime(0.22, now+a); node.gain.exponentialRampToValueAtTime(s, now+a+d); node.gain.exponentialRampToValueAtTime(0.0001, now+a+d+r); }
+
+function playNote(freq, duration=2.0){
+  const ctx=getAudioCtx(); const now=ctx.currentTime;
+  const gain=ctx.createGain(); const out=ctx.createGain(); const lp=ctx.createBiquadFilter(); lp.type='lowpass';
+  gain.connect(lp); lp.connect(out); out.connect(ctx.destination);
+
+  let osc1,osc2;
+  switch(currentPreset){
+    case 'piano':
+      lp.frequency.setValueAtTime(2400, now);
+      envGain(gain, now, 0.01, 0.25, 0.001, duration);
+      osc1=ctx.createOscillator(); osc1.type='sine'; osc1.frequency.setValueAtTime(freq, now);
+      osc2=ctx.createOscillator(); osc2.type='triangle'; osc2.frequency.setValueAtTime(freq*2, now);
+      osc1.connect(gain); osc2.connect(gain);
+      osc1.start(now); osc2.start(now); osc1.stop(now+duration+0.05); osc2.stop(now+duration+0.05);
+      break;
+    case 'rhodes':
+      lp.frequency.setValueAtTime(2200, now);
+      envGain(gain, now, 0.01, 0.35, 0.002, duration*1.2);
+      osc1=ctx.createOscillator(); osc1.type='sine'; osc1.frequency.setValueAtTime(freq*0.997, now);
+      osc2=ctx.createOscillator(); osc2.type='sine'; osc2.frequency.setValueAtTime(freq*1.003, now);
+      osc1.connect(gain); osc2.connect(gain);
+      osc1.start(now); osc2.start(now); osc1.stop(now+duration+0.2); osc2.stop(now+duration+0.2);
+      break;
+    case 'organ':
+      lp.frequency.setValueAtTime(6000, now);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.setTargetAtTime(0.0001, now+duration, 0.15);
+      [1,2,3,4,6].forEach(h=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(freq*h, now); const g=ctx.createGain(); g.gain.setValueAtTime(1/Math.pow(h,1.4), now); o.connect(g).connect(gain); o.start(now); o.stop(now+duration+0.3); });
+      break;
+    case 'pad':
+      lp.frequency.setValueAtTime(1800, now);
+      const g2=ctx.createGain(); g2.gain.setValueAtTime(0.0001, now); g2.gain.exponentialRampToValueAtTime(0.18, now+0.2); g2.gain.exponentialRampToValueAtTime(0.001, now+duration+0.6);
+      const o1=ctx.createOscillator(); o1.type='sawtooth'; o1.frequency.setValueAtTime(freq*0.995, now);
+      const o2=ctx.createOscillator(); o2.type='sawtooth'; o2.frequency.setValueAtTime(freq*1.006, now);
+      o1.connect(g2); o2.connect(g2); g2.connect(lp);
+      o1.start(now); o2.start(now); o1.stop(now+duration+0.8); o2.stop(now+duration+0.8);
+      break;
+    case 'pluck':
+      lp.frequency.setValueAtTime(2500, now);
+      const g3=ctx.createGain(); g3.gain.setValueAtTime(0.0001, now); g3.gain.exponentialRampToValueAtTime(0.25, now+0.008); g3.gain.exponentialRampToValueAtTime(0.0006, now+0.25);
+      const op=ctx.createOscillator(); op.type='sawtooth'; op.frequency.setValueAtTime(freq, now);
+      op.connect(g3); g3.connect(lp);
+      op.start(now); op.stop(now+0.35);
+      break;
+    case 'bell':
+      const carrier=ctx.createOscillator(); carrier.type='sine'; carrier.frequency.setValueAtTime(freq, now);
+      const modulator=ctx.createOscillator(); modulator.type='sine'; modulator.frequency.setValueAtTime(freq*2.7, now);
+      const modGain=ctx.createGain(); modGain.gain.setValueAtTime(200, now);
+      modulator.connect(modGain).connect(carrier.frequency);
+      const gBell=ctx.createGain(); gBell.gain.setValueAtTime(0.0001, now); gBell.gain.exponentialRampToValueAtTime(0.2, now+0.005); gBell.gain.exponentialRampToValueAtTime(0.0004, now+duration*1.6);
+      carrier.connect(gBell).connect(ctx.destination);
+      modulator.start(now); carrier.start(now); modulator.stop(now+duration*1.8); carrier.stop(now+duration*1.8);
+      return;
+    case 'synth':
+      lp.frequency.setValueAtTime(4200, now);
+      envGain(gain, now, 0.005, 0.18, 0.02, duration*0.9);
+      const s1=ctx.createOscillator(); s1.type='sawtooth'; s1.frequency.setValueAtTime(freq*0.996, now);
+      const s2=ctx.createOscillator(); s2.type='sawtooth'; s2.frequency.setValueAtTime(freq*1.004, now);
+      const sub=ctx.createOscillator(); sub.type='square'; sub.frequency.setValueAtTime(freq*0.5, now);
+      const subGain=ctx.createGain(); subGain.gain.setValueAtTime(0.15, now);
+      const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.setValueAtTime(0.8, now);
+      const lfoGain=ctx.createGain(); lfoGain.gain.setValueAtTime(120, now);
+      lfo.connect(lfoGain).connect(lp.frequency);
+      s1.connect(gain); s2.connect(gain); sub.connect(subGain).connect(gain);
+      s1.start(now); s2.start(now); sub.start(now); lfo.start(now);
+      s1.stop(now+duration+0.3); s2.stop(now+duration+0.3); sub.stop(now+duration+0.3); lfo.stop(now+duration+0.3);
+      break;
+  }
+}
+
+function playNoteAbs(abs, duration=2.0, svgEl=null){ flashKey(abs, svgEl); playNote(absToFreq(abs), duration); }
+function playChord(absArray, svgEl, duration=1.8, simultaneous=true){
+  if(simultaneous){
+    absArray.forEach(abs=> playNoteAbs(abs, duration, svgEl));
+  } else {
+    const spread=0.12; // arpejo mais lento
+    absArray.forEach((abs,i)=>{ setTimeout(()=> playNoteAbs(abs, duration, svgEl), i*spread*1000); });
+  }
+}
+
+// ====== Tema ======
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  const cur=document.body.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.body.setAttribute('data-theme',cur);
+  localStorage.setItem('mv_theme',cur);
+  updateThemeIcon();
+});
+function updateThemeIcon(){ const t=document.body.getAttribute('data-theme'); document.getElementById('themeToggle').textContent=t==='dark'?'☀️':'🌙'; }
+const saved=localStorage.getItem('mv_theme'); if(saved) document.body.setAttribute('data-theme',saved); updateThemeIcon();
+
+// ====== Abas (top-level) ======
+(function initTabs(){
+  const tabsNav=document.getElementById('navTabs');
+  if(!tabsNav) return;
+  const btns=tabsNav.querySelectorAll('.tab-btn');
+  function activate(tab){
+    btns.forEach(b=>{ b.classList.toggle('active', b.dataset.tab===tab); b.setAttribute('aria-selected', b.dataset.tab===tab? 'true':'false'); });
+    document.querySelectorAll('[data-tab-content]').forEach(el=>{ el.hidden = el.getAttribute('data-tab-content')!==tab; });
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  btns.forEach(b=> b.addEventListener('click', ()=> activate(b.dataset.tab)));
+  // fallback robusto: garante que a aba 'chords' fica visível
+  activate('chords');
+  const chordsPane = document.querySelector('[data-tab-content="chords"]');
+  if(chordsPane) chordsPane.hidden = false;
+})();
+// Fallback extra após carregar DOM
+document.addEventListener('DOMContentLoaded', ()=>{
+  try{
+    const chordsPane = document.querySelector('[data-tab-content="chords"]');
+    if(chordsPane) chordsPane.hidden = false;
+  }catch(e){ console.error('Falha no fallback de abas:', e); }
+});
+
+// ====== Campo Harmônico ======
+const harmKeySel = document.getElementById('harmKey');
+const harmModeSel = document.getElementById('harmMode');
+const harmGrid = document.getElementById('harmGrid');
+// Romanos (maior/menor) usados em Campo Harmônico e Progressões
+const DEG_ROM_MAJ = ['I','ii','iii','IV','V','vi','vii°'];
+const DEG_ROM_MIN = ['i','ii°','III','iv','v','VI','VII'];
+// Helpers do Campo Harmônico (somente tríades)
+function scaleStepsOf(mode){ return mode==='major'? SCALES.major : SCALES.natural_minor; }
+const TRIAD_MAJOR = ['Maj','Min','Min','Maj','Maj','Min','dim'];
+const TRIAD_MINOR = ['Min','dim','Maj','Min','Min','Maj','Maj'];
+function romLabels(mode){ return mode==='major'? DEG_ROM_MAJ : DEG_ROM_MIN; }
+function diatonicFormulas(mode){ return mode==='major'? TRIAD_MAJOR : TRIAD_MINOR; }
+function buildDiatonicCards(root, mode){
+  harmGrid.innerHTML='';
+  const steps=scaleStepsOf(mode); const romans=romLabels(mode); const fams=diatonicFormulas(mode);
+  const rootSemi=semitoneOf(root);
+  for(let d=0; d<7; d++){
+    const degSemi=(rootSemi + steps[d])%12;
+    const degName=SEMITONES[degSemi];
+    const famKey=fams[d];
+    const chordAbs=buildChordAbs(degName, FORMULAS[famKey]);
+    const invs=inversionsAbs(chordAbs);
+    const card=document.createElement('div'); card.className='card';
+    const title=document.createElement('div'); title.className='chord-title';
+    const left=document.createElement('div'); left.style.flex='1';
+    left.textContent=`${romans[d]} — ${degName}${famKey==='Min'?'m':(famKey==='dim'?'°':'')}`;
+    const play=document.createElement('button'); play.className='play-chord'; play.textContent='🎵';
+    const arp=document.createElement('button'); arp.className='play-chord'; arp.textContent='↗️';
+    title.appendChild(left); title.appendChild(play); title.appendChild(arp);
+    const wrap=document.createElement('div'); wrap.className='kbd-wrap';
+    const shown=invs[0].filter(a=>a>=START_ABS && a<=END_ABS);
+    wrap.innerHTML=renderKeyboardSVG(shown);
+    const svgEl=wrap.querySelector('svg');
+    wrap.addEventListener('click', e=>{
+      const t=e.target; if(!(t && (t.matches('rect.white-key')||t.matches('rect.black-key')))) return;
+      const abs=parseInt(t.getAttribute('data-abs')); playNoteAbs(abs, 1.8, svgEl);
+    });
+    play.addEventListener('click', ()=> playChord(invs[0], svgEl, 1.8, true));
+    arp.addEventListener('click', ()=> playChord(invs[0], svgEl, 1.8, false));
+    const list=document.createElement('div'); list.className='note-list'; list.textContent='Notas: '+invs[0].map(absLabel).join(' — ');
+    card.appendChild(title); card.appendChild(wrap); card.appendChild(list);
+    harmGrid.appendChild(card);
+  }
+}
+if(harmKeySel){
+  // Preenche tonalidades (C, C#, D, ...)
+  ROOTS.forEach(r=>{
+    const o=document.createElement('option');
+    o.value=r; o.textContent=r;
+    harmKeySel.appendChild(o);
+  });
+
+  // Valor inicial e render
+  harmKeySel.value = 'C';
+  buildDiatonicCards(harmKeySel.value, (harmModeSel ? harmModeSel.value : 'major'));
+
+  // Eventos
+  harmKeySel.addEventListener('change', ()=>{
+    buildDiatonicCards(harmKeySel.value, harmModeSel ? harmModeSel.value : 'major');
+  });
+  if(harmModeSel){
+    harmModeSel.addEventListener('change', ()=>{
+      buildDiatonicCards(harmKeySel.value, harmModeSel.value);
+    });
+  }
+}
+// ====== Progressões ======
+const PROGS = {
+  major: [
+    {id:'I-V-vi-IV', deg:[0,4,5,3], label:'I – V – vi – IV'},
+    {id:'ii-V-I', deg:[1,4,0], label:'ii – V – I'},
+    {id:'I-vi-ii-V', deg:[0,5,1,4], label:'I – vi – ii – V'},
+    {id:'I-IV-V-IV', deg:[0,3,4,3], label:'I – IV – V – IV'}
+  ],
+  minor: [
+    {id:'i-iv-v', deg:[0,3,4], label:'i – iv – v'},
+    {id:'i-bVII-bVI', deg:[0,6,5], label:'i – ♭VII – ♭VI'},
+    {id:'ii°-V7-i', deg:[1,4,0], label:'ii° – V – i'}
+  ]
+};
+const progKeySel=document.getElementById('progKey');
+const progModeSel=document.getElementById('progMode');
+const progSel=document.getElementById('progSel');
+const playProgBtn=document.getElementById('playProg');
+const loopProgChk=document.getElementById('loopProg');
+const progGrid=document.getElementById('progGrid');
+if(progKeySel){ ROOTS.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; progKeySel.appendChild(o); }); }
+
+function fillProgList(){
+  const mode=progModeSel.value; progSel.innerHTML='';
+  PROGS[mode].forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.label; progSel.appendChild(o); });
+}
+function degreeRoots(root, mode){
+  const steps = mode==='major'? SCALES.major : SCALES.natural_minor;
+  return steps.map(st => SEMITONES[(semitoneOf(root)+st)%12]);
+}
+const DEG_FORM_MAJOR = ['Maj7','m7','m7','Maj7','7','m7','m7b5'];
+function degFormMinor(harmDom){ return ['m7','m7b5','Maj7','m7', harmDom?'7':'m7','Maj7', harmDom?'dim7':'Maj7']; }
+
+function renderProgression(){
+  progGrid.innerHTML='';
+  const mode=progModeSel.value; const key=progKeySel.value; const list=PROGS[mode];
+  const chosen=list.find(p=>p.id===progSel.value)||list[0];
+  const degRoots = degreeRoots(key, mode);
+  const forms = mode==='major'? DEG_FORM_MAJOR : degFormMinor(true);
+  const roms = mode==='major'? DEG_ROM_MAJ : DEG_ROM_MIN;
+  const chords = chosen.deg.map(di=>{
+    const rootName = degRoots[di];
+    const famKey = forms[di];
+    const notes = buildChordAbs(rootName, FORMULAS[famKey]);
+    return {rootName, famKey, notes, rom: roms[di] };
+  });
+  chords.forEach((ch,i)=>{
+    const card=document.createElement('div'); card.className='card';
+    const title=document.createElement('div'); title.className='chord-title';
+    const left=document.createElement('div'); left.textContent=`${i+1}. ${ch.rom} — ${ch.rootName}${ch.famKey==='Maj7'?'maj7':(ch.famKey==='7'?'7':(ch.famKey==='m7'?'m7':(ch.famKey==='m7b5'?'m7♭5':(ch.famKey==='dim7'?'dim7':''))))}`; left.style.flex='1';
+    const play=document.createElement('button'); play.className='play-chord'; play.textContent='🎵';
+    const arp=document.createElement('button'); arp.className='play-chord'; arp.textContent='↗️';
+    title.appendChild(left); title.appendChild(play); title.appendChild(arp);
+    const wrap=document.createElement('div'); wrap.className='kbd-wrap';
+    const shown = ch.notes.filter(a=>a>=START_ABS && a<=END_ABS);
+    wrap.innerHTML=renderKeyboardSVG(shown);
+    const svgEl=wrap.querySelector('svg');
+    play.addEventListener('click', ()=> playChord(ch.notes, svgEl, 1.8, true));
+    arp.addEventListener('click', ()=> playChord(ch.notes, svgEl, 1.8, false));
+    card.appendChild(title); card.appendChild(wrap); progGrid.appendChild(card);
+  });
+}
+function playProgressionOnce(){
+  const cards=[...progGrid.querySelectorAll('.card')];
+  let t=0; const hold=1700; const gap=250; // ms
+  cards.forEach(card=>{
+    const svg=card.querySelector('svg');
+    setTimeout(()=>{
+      const rects=[...svg.querySelectorAll('rect[data-abs]')];
+      const pressed=rects.filter(r=> r.getAttribute('fill')!=='#fff' && r.getAttribute('fill')!=='#000').map(r=> parseInt(r.getAttribute('data-abs')));
+      if(pressed.length){ playChord(pressed, svg, 1.6, true); }
+    }, t);
+    t += hold + gap;
+  });
+}
+function playProgression(){
+  playProgressionOnce();
+  if(loopProgChk.checked){
+    const total = progGrid.querySelectorAll('.card').length * (1700+250);
+    setTimeout(()=> playProgression(), total);
+  }
+}
+if(progKeySel){
+  progKeySel.value='C';
+  fillProgList(); renderProgression();
+  progKeySel.addEventListener('change', renderProgression);
+  progModeSel.addEventListener('change', ()=>{ fillProgList(); renderProgression(); });
+  progSel.addEventListener('change', renderProgression);
+  playProgBtn.addEventListener('click', playProgression);
+}
+
+// ====== Self-tests ======
+(function runSelfTests(){
+  try{
+    console.group('%cSelf-tests','color:#2b6777;font-weight:bold');
+    console.assert(Math.abs(noteToFreq('A4')-440)<1e-9, 'A4=440Hz');
+    const c4Abs=(4*12)+0; console.assert(absLabel(c4Abs)==='C4','C4 label');
+    const cMaj=buildChordAbs('C',[0,4,7]); console.assert(inversionsAbs(cMaj).length===3,'Tríade C tem 3 voicings');
+    const g7=buildChordAbs('G',[0,4,7,10]); console.assert(inversionsAbs(g7).length===4,'G7 tem 4 voicings');
+    const tabsVis=[...document.querySelectorAll('[data-tab-content]')].filter(el=>!el.hidden); console.assert(tabsVis.length===1,'1 aba visível');
+    console.log('%cOK','color:green'); console.groupEnd();
+  }catch(e){ console.error('Self-tests falharam', e); }
+})();
+</script>
+</body>
+</html>
